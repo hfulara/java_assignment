@@ -5,6 +5,7 @@ import com.warehouse.api.WarehouseResource;
 import com.warehouse.api.beans.Warehouse;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
   }
 
   @Override
+  @Transactional
   public Warehouse createANewWarehouseUnit(@NotNull Warehouse data) {
     var warehouse = new com.fulfilment.application.monolith.warehouses.domain.models.Warehouse();
     warehouse.businessUnitCode = data.getBusinessUnitCode();
