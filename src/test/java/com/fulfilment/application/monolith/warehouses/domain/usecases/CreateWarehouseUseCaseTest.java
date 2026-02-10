@@ -9,6 +9,7 @@ import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import java.time.LocalDateTime;
@@ -27,7 +28,7 @@ class CreateWarehouseUseCaseTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        useCase = new CreateWarehouseUseCase(warehouseStore);
+        useCase = new CreateWarehouseUseCase(warehouseStore, locationGateway);
     }
 
     @Test
