@@ -16,21 +16,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 17
           cache: maven
 
       - name: Set timezone to UTC
         run: echo "TZ=UTC" >> $GITHUB_ENV
 
+      - name: Make mvnw executable
+        run: chmod +x mnvw
+
       - name: Build and run tests
         run: ./mvnw clean verify -Duser.timezone=UTC
 
       - name: Package application
-        run: ./mvnw package -D skipTests
+        run: ./mvnw package -DskipTests
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
