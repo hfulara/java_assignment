@@ -26,11 +26,11 @@ jobs:
       - name: Set timezone to UTC
         run: echo "TZ=UTC" >> $GITHUB_ENV
 
-      - name: Build and run tests
-        run: ./mvnw clean verify -Duser.timezone=UTC
+      - name: Give mvnw execute permission
+        run: chmod +x ./mvnw
 
-      - name: Package application
-        run: ./mvnw package -D skipTests
+      - name: Build and run tests
+        run: ./mvnw -B clean verify -Duser.timezone=UTC
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
