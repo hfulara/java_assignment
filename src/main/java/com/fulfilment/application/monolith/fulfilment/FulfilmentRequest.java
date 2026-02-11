@@ -1,4 +1,4 @@
-package com.fulfilment.application.monolith.fulfilment.api;
+package com.fulfilment.application.monolith.fulfilment;
 
 public class FulfilmentRequest {
     public Long storeId;

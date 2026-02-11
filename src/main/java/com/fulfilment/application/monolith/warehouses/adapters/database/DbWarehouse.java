@@ -39,4 +39,5 @@ public class DbWarehouse {
     warehouse.archivedAt = this.archivedAt;
     return warehouse;
   }
+
 }

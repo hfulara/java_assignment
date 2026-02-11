@@ -3,6 +3,7 @@ package com.fulfilment.application.monolith.warehouses;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.*;
 
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
@@ -21,21 +22,21 @@ public class WarehouseIT {
             }
                         """)
                 .when()
-                .post("/warehouse")
+                .post("warehouse")
                 .then()
                 .statusCode(200)
                 .body(containsString("MWH-999"));
 
         given()
                 .when()
-                .get("/warehouse")
+                .get("warehouse")
                 .then()
                 .statusCode(200)
                 .body(containsString("MWH-999"));
 
         given()
                 .when()
-                .delete("/warehouse/MWH-999")
+                .delete("warehouse/MWH-999")
                 .then()
                 .statusCode(204);
     }
