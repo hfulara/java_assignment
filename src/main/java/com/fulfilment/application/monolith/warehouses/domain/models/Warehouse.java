@@ -4,16 +4,34 @@ import java.time.LocalDateTime;
 
 public class Warehouse {
 
-  // unique identifier
+  public Long id;
   public String businessUnitCode;
-
   public String location;
-
-  public Integer capacity;
-
-  public Integer stock;
-
+  public int capacity;
+  public int stock;
   public LocalDateTime createdAt;
-
   public LocalDateTime archivedAt;
+
+  public Warehouse() {}
+
+  public Warehouse(String businessUnitCode,
+                   String location,
+                   int capacity,
+                   int stock
+                   ) {
+
+    this.businessUnitCode = businessUnitCode;
+    this.location = location;
+    this.capacity = capacity;
+    this.stock = stock;
+
+  }
+
+  public void archive() {
+    if (this.archivedAt != null) {
+      throw new IllegalStateException("Warehouse already archived");
+    }
+    this.archivedAt = LocalDateTime.now();
+  }
+
 }

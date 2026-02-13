@@ -78,7 +78,7 @@ paths:
         A Warehouse can be replaced by another Warehouse with the same Business Unit Code. 
         That means that the previous Warehouse will be archived and the new Warehouse will be created assuming its place.
       parameters:
-        - name: businessUnitCode
+        - name: warehouseId
           in: path
           required: true
           description: Business unit code of the warehouse unit to replace

@@ -4,58 +4,75 @@ import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 public class WarehouseRepository implements WarehouseStore, PanacheRepository<DbWarehouse> {
 
+  @Inject
+  EntityManager em;
+
   @Override
   public List<Warehouse> getAll() {
-    return this.listAll().stream().map(DbWarehouse::toWarehouse).toList();
+    return this.listAll().stream().map(DbWarehouse::toDomain).toList();
   }
 
   @Override
   public void create(Warehouse warehouse) {
-    DbWarehouse db = new DbWarehouse();
-    db.location = warehouse.location;
-    db.businessUnitCode = warehouse.businessUnitCode;
-    db.capacity = warehouse.capacity;
-    db.stock = warehouse.stock;
-    db.createdAt = warehouse.createdAt;
+    DbWarehouse db = DbWarehouse.fromDomain(warehouse);
+    db.createdAt = LocalDateTime.now();
     db.archivedAt = null;
 
-    persist(db);
+    persistAndFlush(db);
   }
 
   @Override
   public void update(Warehouse warehouse) {
-    DbWarehouse db = find("businessUnitCode", warehouse.businessUnitCode).firstResult();
-    if (db == null) {
-      throw new IllegalArgumentException("Warehouse not found");
-    }
+    DbWarehouse db = findByIdOptional(warehouse.id)
+            .orElseThrow(() -> new IllegalArgumentException("Warehouse not found"));
+
+    db.businessUnitCode = warehouse.businessUnitCode;
     db.location = warehouse.location;
     db.capacity = warehouse.capacity;
     db.stock = warehouse.stock;
     db.archivedAt = warehouse.archivedAt;
-
-    persist(db);
   }
 
   @Override
   public void remove(Warehouse warehouse) {
-    DbWarehouse db = find("businessUnitCode", warehouse.businessUnitCode).firstResult();
-    if (db != null) {
-      delete(db);
-    }
+    DbWarehouse db = findByIdOptional(warehouse.id)
+            .orElseThrow(() -> new IllegalArgumentException("Warehouse not found"));
+
+    db.archivedAt = LocalDateTime.now();
   }
 
   @Override
-  public Warehouse findByBusinessUnitCode(String buCode) {
-    DbWarehouse db = find("businessUnitCode", buCode).firstResult();
-    return db == null ? null : db.toWarehouse();
+  public Optional<Warehouse> findByBusinessUnitCode(String buCode) {
+    return find("businessUnitCode", buCode)
+            .firstResultOptional()
+            .map(DbWarehouse::toDomain);
   }
 
-  public DbWarehouse findDbByBusinessUnitCode(String buCode) {
-    return find("businessUnitCode", buCode).firstResult();
+  @Override
+  public Optional<Warehouse> getById(Long id) {
+    DbWarehouse entity = em.find(DbWarehouse.class, id);
+    if (entity == null) {
+      return Optional.empty();
+    }
+    return Optional.of(entity.toDomain());
   }
+
+  @Override
+  public Warehouse save(Warehouse warehouse) {
+    DbWarehouse entity = DbWarehouse.fromDomain(warehouse);
+    create(warehouse);
+
+    return entity.toDomain();
+  }
+
 }

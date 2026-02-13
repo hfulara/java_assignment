@@ -9,7 +9,6 @@ import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import java.time.LocalDateTime;
@@ -32,12 +31,21 @@ class CreateWarehouseUseCaseTest {
     }
 
     @Test
-    void shouldCreateWarehouseSuccessfully() {
-        Warehouse warehouse = warehouse("MWH-001", "ZWOLLE-001", 100, 50);
+    void shouldThrowIfWarehouseIsNull() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> useCase.create(null));
 
-        when(warehouseStore.findByBusinessUnitCode("MWH-001")).thenReturn(null);
-        when(locationGateway.resolveByIdentifier("ZWOLLE-001"))
-                .thenReturn(Optional.of(new Location("ZWOLLE-001", 1, 200)));
+        assertEquals("Warehouse must be provided", exception.getMessage());
+    }
+
+    @Test
+    void shouldCreateWarehouseSuccessfully() {
+        Warehouse warehouse =  new Warehouse("MWH-002", "ZWOLLE-001", 100, 50);
+
+        when(warehouseStore.findByBusinessUnitCode(warehouse.businessUnitCode)).thenReturn(Optional.empty());
+        when(locationGateway.resolveByIdentifier(warehouse.location))
+                .thenReturn(Optional.of(new Location("ZWOLLE-001", 2, 200)));
 
         assertDoesNotThrow(() -> useCase.create(warehouse));
         verify(warehouseStore).create(warehouse);
@@ -45,49 +53,80 @@ class CreateWarehouseUseCaseTest {
 
     @Test
     void shouldFailWhenBusinessUnitCodeAlreadyExists() {
-        Warehouse warehouse = warehouse("MWH-001", "ZWOLLE-001", 100, 50);
+        Warehouse warehouse = new Warehouse("MWH-001", "ZWOLLE-001", 100, 50);
 
-        // Simulate existing warehouse
         when(warehouseStore.findByBusinessUnitCode("MWH-001"))
-                .thenReturn(existingWarehouse("MWH-001"));
+                .thenReturn(Optional.of(warehouse));
 
-
-        assertThrows(
+        IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> useCase.create(warehouse));
+                () -> useCase.create(warehouse)
+        );
+
+        assertEquals("Business Unit already exists", exception.getMessage());
     }
 
     @Test
     void shouldFailWhenLocationIsInvalid() {
-        Warehouse warehouse = warehouse("MWH-001", "INVALID", 100, 50);
+        Warehouse warehouse = new Warehouse("MWH-001", "ZWOLLE-001", 100, 50);
 
-        when(warehouseStore.findByBusinessUnitCode("MWH-001")).thenReturn(null);
+        when(warehouseStore.findByBusinessUnitCode("MWH-003")).thenReturn(Optional.empty());
         when(locationGateway.resolveByIdentifier("INVALID")).thenReturn(Optional.empty());
 
-        assertThrows(
+        IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> useCase.create(warehouse));
+
+        assertEquals("Invalid warehouse location", exception.getMessage());
     }
 
-    private Warehouse warehouse(
-            String buCode, String location, int capacity, int stock) {
+    @Test
+    void shouldThrowIfCapacityOrStockZero() {
+        Warehouse warehouse = new Warehouse("MWH-002", "ZWOLLE-002", 0, 0);
+        Location location = new Location("ZWOLLE-002", 2,50);
 
-        Warehouse w = new Warehouse();
-        w.businessUnitCode = buCode;
-        w.location = location;
-        w.capacity = capacity;
-        w.stock = stock;
-        w.createdAt = LocalDateTime.now();
-        return w;
+        when(warehouseStore.findByBusinessUnitCode("MWH-003"))
+                .thenReturn(Optional.of(warehouse));
+        when(locationGateway.resolveByIdentifier("ZWOLLE-002"))
+                .thenReturn(Optional.of(location));
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> useCase.create(warehouse));
+
+        assertEquals("Capacity and stock must be informed", exception.getMessage());
     }
-    private Warehouse existingWarehouse(String buCode) {
-        Warehouse w = new Warehouse();
-        w.businessUnitCode = buCode;
-        w.location = "ZWOLLE-001";
-        w.capacity = 200;
-        w.stock = 100;
-        w.createdAt = LocalDateTime.now();
-        return w;
+
+    @Test
+    void shouldThrowIfCapacityExceedsLocationLimit() {
+        Warehouse warehouse = new Warehouse("MWH-004", "ZWOLLE-002", 100, 10);
+        Location location = new Location("ZWOLLE-002", 2,50);
+
+        when(warehouseStore.findByBusinessUnitCode("MWH-001"))
+                .thenReturn(Optional.of(warehouse));
+
+        when(locationGateway.resolveByIdentifier("ZWOLLE-002"))
+                .thenReturn(Optional.of(location));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> useCase.create(warehouse));
+
+        assertEquals("Warehouse capacity exceeds location limit", exception.getMessage());
+    }
+
+    @Test
+    void shouldThrowIfStockExceedsCapacity() {
+        Warehouse warehouse = new Warehouse("MWH-005", "ZWOLLE-002", 100, 150);
+        Location location = new Location("ZWOLLE-002", 2,50);
+
+        when(locationGateway.resolveByIdentifier("ZWOLLE-002"))
+                .thenReturn(Optional.of(location));
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> useCase.create(warehouse));
+
+        assertEquals("Stock exceeds capacity", exception.getMessage());
     }
 
 }

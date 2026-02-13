@@ -16,12 +16,11 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
 
   @Override
   public void replace(Warehouse newWarehouse) {
-    Warehouse existingWarehouse = warehouseStore.findByBusinessUnitCode(newWarehouse.businessUnitCode);
+    Warehouse existingWarehouse = warehouseStore.findByBusinessUnitCode(newWarehouse.businessUnitCode)
+            .orElseThrow(() -> new IllegalArgumentException("Warehouse not found"));
 
-    if(existingWarehouse == null)
-      throw new IllegalArgumentException("Warehouse not found");
 
-    if (!existingWarehouse.stock.equals(newWarehouse.stock)) {
+    if (existingWarehouse.stock != newWarehouse.stock) {
       throw new IllegalArgumentException("Stock must match existing warehouse");
     }
 

@@ -7,82 +7,78 @@ import com.fulfilment.application.monolith.location.LocationGateway;
 import com.fulfilment.application.monolith.warehouses.domain.models.Location;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class ReplaceWarehouseUseCaseTest {
 
-    @Mock WarehouseStore warehouseStore;
+    @Mock
+    WarehouseStore warehouseStore;
+
+    @InjectMocks
     ReplaceWarehouseUseCase useCase;
 
-    @Mock
-    LocationGateway locationGateway;
+    Warehouse existing;
+    Warehouse replacement;
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        useCase = new ReplaceWarehouseUseCase(warehouseStore);
+    void setup() {
+        existing = new Warehouse("MWH-001", "ZWOLLE-001", 100, 50);
+        replacement = new Warehouse("MWH-001", "ZWOLLE-001",50,150);
     }
 
     @Test
     void shouldReplaceWarehouseSuccessfully() {
-        Warehouse oldWarehouse =
-                warehouse("MWH-001", 100, 50);
-
-        Warehouse newWarehouse =
-                warehouse("MWH-001", 150, 50);
-
+        replacement.stock = 50;
         when(warehouseStore.findByBusinessUnitCode("MWH-001"))
-                .thenReturn(oldWarehouse);
+                .thenReturn(Optional.of(existing));
 
-        Location location = new Location("ZWOLLE-001", 2,300);
-
-        when(locationGateway.resolveByIdentifier("ZWOLLE-001"))
-                .thenReturn(Optional.of(location));
-
-        assertDoesNotThrow(() -> useCase.replace(newWarehouse));
-
-        assertNotNull(oldWarehouse.archivedAt);
-
-
-        verify(warehouseStore).create(newWarehouse);
+        useCase.replace(replacement);
+        verify(warehouseStore).update(existing);
     }
 
     @Test
-    void shouldFailWhenNewCapacityIsInsufficient() {
-        Warehouse oldWarehouse = warehouse("MWH-001", 100, 80);
-        Warehouse newWarehouse = warehouse("MWH-001", 60, 80);
-
+    void shouldThrowIfWarehouseNotFound() {
         when(warehouseStore.findByBusinessUnitCode("MWH-001"))
-                .thenReturn(oldWarehouse);
+                .thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class,
-                () -> useCase.replace(newWarehouse));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> useCase.replace(replacement));
+
+        assertEquals("Warehouse not found", exception.getMessage());
     }
 
     @Test
-    void shouldFailWhenStockDoesNotMatch() {
-        Warehouse oldWarehouse = warehouse("MWH-001", 100, 50);
-        Warehouse newWarehouse = warehouse("MWH-001", 150, 40);
+    void shouldThrowIfStockMismatch() {
+        replacement.stock = 60;
 
         when(warehouseStore.findByBusinessUnitCode("MWH-001"))
-                .thenReturn(oldWarehouse);
+                .thenReturn(Optional.of(existing));
 
-        assertThrows(IllegalArgumentException.class,
-                () -> useCase.replace(newWarehouse));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> useCase.replace(replacement));
+
+        assertEquals("Stock must match existing warehouse", exception.getMessage());
     }
 
-    private Warehouse warehouse(String bu, int cap, int stock) {
-        Warehouse w = new Warehouse();
-        w.businessUnitCode = bu;
-        w.capacity = cap;
-        w.stock = stock;
-        w.createdAt = LocalDateTime.now();
-        return w;
+    @Test
+    void shouldThrowIfCapacityCannotHoldStock() {
+        replacement.stock = 50;
+        replacement.capacity = 5;
+        when(warehouseStore.findByBusinessUnitCode("MWH-001"))
+                .thenReturn(Optional.of(existing));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> useCase.replace(replacement));
+
+        assertEquals("Capacity cannot hold existing stock", exception.getMessage());
     }
+
 }

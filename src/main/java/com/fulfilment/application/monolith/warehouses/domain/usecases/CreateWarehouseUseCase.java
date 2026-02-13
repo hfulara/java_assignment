@@ -27,10 +27,8 @@ public class CreateWarehouseUseCase implements CreateWarehouseOperation {
     if (warehouse == null) {
       throw new IllegalArgumentException("Warehouse must be provided");
     }
-    Warehouse existing =
-            warehouseStore.findByBusinessUnitCode(warehouse.businessUnitCode);
-
-    if (existing != null) {
+    Optional<Warehouse> existingWarehouse = warehouseStore.findByBusinessUnitCode(warehouse.businessUnitCode);
+    if (! existingWarehouse.isEmpty()) {
       throw new IllegalArgumentException("Business Unit already exists");
     }
 
@@ -43,7 +41,7 @@ public class CreateWarehouseUseCase implements CreateWarehouseOperation {
 
     Location location = locationOpt.get();
 
-    if (warehouse.capacity == null || warehouse.stock == null) {
+    if (warehouse.capacity == 0 || warehouse.stock == 0) {
       throw new IllegalArgumentException("Capacity and stock must be informed");
     }
 
