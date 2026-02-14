@@ -19,11 +19,6 @@ jobs:
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
 
-      - name: Upgrade Docker Engine
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-          
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -38,7 +33,7 @@ jobs:
         run: chmod +x ./mvnw
 
       - name: Build and run tests
-        run: ./mvnw -B clean verify -Duser.timezone=UTC
+        run: ./mvnw -B clean verify -Duser.timezone=UTC -Dquarkus.profile=test
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
