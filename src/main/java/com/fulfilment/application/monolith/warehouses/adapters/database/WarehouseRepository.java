@@ -6,6 +6,7 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.ws.rs.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,7 +35,7 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
   @Override
   public void update(Warehouse warehouse) {
     DbWarehouse db = findByIdOptional(warehouse.id)
-            .orElseThrow(() -> new IllegalArgumentException("Warehouse not found"));
+            .orElseThrow(() -> new NotFoundException("Warehouse not found"));
 
     db.businessUnitCode = warehouse.businessUnitCode;
     db.location = warehouse.location;

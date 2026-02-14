@@ -3,17 +3,19 @@ package com.fulfilment.application.monolith.warehouses.domain.usecases;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.fulfilment.application.monolith.common.BusinessException;
 import com.fulfilment.application.monolith.warehouses.domain.models.Location;
 import com.fulfilment.application.monolith.location.LocationGateway;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
+@QuarkusTest
 class CreateWarehouseUseCaseTest {
 
     @Mock
@@ -32,8 +34,8 @@ class CreateWarehouseUseCaseTest {
 
     @Test
     void shouldThrowIfWarehouseIsNull() {
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+                BusinessException.class,
                 () -> useCase.create(null));
 
         assertEquals("Warehouse must be provided", exception.getMessage());
@@ -58,8 +60,8 @@ class CreateWarehouseUseCaseTest {
         when(warehouseStore.findByBusinessUnitCode("MWH-001"))
                 .thenReturn(Optional.of(warehouse));
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+                BusinessException.class,
                 () -> useCase.create(warehouse)
         );
 
@@ -73,8 +75,8 @@ class CreateWarehouseUseCaseTest {
         when(warehouseStore.findByBusinessUnitCode("MWH-003")).thenReturn(Optional.empty());
         when(locationGateway.resolveByIdentifier("INVALID")).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+                BusinessException.class,
                 () -> useCase.create(warehouse));
 
         assertEquals("Invalid warehouse location", exception.getMessage());
@@ -90,8 +92,8 @@ class CreateWarehouseUseCaseTest {
         when(locationGateway.resolveByIdentifier("ZWOLLE-002"))
                 .thenReturn(Optional.of(location));
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+                BusinessException.class,
                 () -> useCase.create(warehouse));
 
         assertEquals("Capacity and stock must be informed", exception.getMessage());
@@ -108,7 +110,7 @@ class CreateWarehouseUseCaseTest {
         when(locationGateway.resolveByIdentifier("ZWOLLE-002"))
                 .thenReturn(Optional.of(location));
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        BusinessException exception = assertThrows(BusinessException.class,
                 () -> useCase.create(warehouse));
 
         assertEquals("Warehouse capacity exceeds location limit", exception.getMessage());
@@ -122,8 +124,8 @@ class CreateWarehouseUseCaseTest {
         when(locationGateway.resolveByIdentifier("ZWOLLE-002"))
                 .thenReturn(Optional.of(location));
 
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        BusinessException exception = assertThrows(
+                BusinessException.class,
                 () -> useCase.create(warehouse));
 
         assertEquals("Stock exceeds capacity", exception.getMessage());

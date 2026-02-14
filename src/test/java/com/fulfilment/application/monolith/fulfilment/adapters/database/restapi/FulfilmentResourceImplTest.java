@@ -1,5 +1,6 @@
-package com.fulfilment.application.monolith.fulfilment.adapters.restapi;
+package com.fulfilment.application.monolith.fulfilment.adapters.database.restapi;
 
+import com.fulfilment.application.monolith.fulfilment.adapters.restapi.FulfilmentResourceImpl;
 import com.fulfilment.application.monolith.fulfilment.domain.modals.FulfilmentRequest;
 import com.fulfilment.application.monolith.fulfilment.domain.usecases.AssignFulfilmentUseCase;
 import com.fulfilment.application.monolith.fulfilment.domain.usecases.commands.AssignFulfilmentCommand;

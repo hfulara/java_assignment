@@ -3,26 +3,25 @@ package com.fulfilment.application.monolith.warehouses.domain.usecases;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.fulfilment.application.monolith.location.LocationGateway;
-import com.fulfilment.application.monolith.warehouses.domain.models.Location;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
 import java.util.Optional;
 
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
+@QuarkusTest
 class ReplaceWarehouseUseCaseTest {
 
     @Mock
     WarehouseStore warehouseStore;
 
-    @InjectMocks
     ReplaceWarehouseUseCase useCase;
 
     Warehouse existing;
@@ -30,6 +29,9 @@ class ReplaceWarehouseUseCaseTest {
 
     @BeforeEach
     void setup() {
+        MockitoAnnotations.openMocks(this);
+        useCase = new ReplaceWarehouseUseCase(warehouseStore);
+
         existing = new Warehouse("MWH-001", "ZWOLLE-001", 100, 50);
         replacement = new Warehouse("MWH-001", "ZWOLLE-001",50,150);
     }

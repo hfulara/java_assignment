@@ -2,14 +2,13 @@ package com.fulfilment.application.monolith.products;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.panache.common.Sort;
+import io.quarkus.test.junit.QuarkusTest;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

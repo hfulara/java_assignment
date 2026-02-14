@@ -3,6 +3,7 @@ package com.fulfilment.application.monolith.fulfilment.domain.usecases;
 import com.fulfilment.application.monolith.fulfilment.domain.models.Fulfilment;
 import com.fulfilment.application.monolith.fulfilment.domain.ports.FulfilmentStore;
 import com.fulfilment.application.monolith.fulfilment.domain.usecases.commands.AssignFulfilmentCommand;
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -10,6 +11,7 @@ import org.mockito.Mockito;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@QuarkusTest
 class AssignFulfilmentUseCaseTest {
 
     private FulfilmentStore fulfilmentStore;

@@ -3,10 +3,12 @@ package com.fulfilment.application.monolith.warehouses.adapters.database;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
+import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
+@QuarkusTest
 class DbWarehouseTest {
 
     @Test

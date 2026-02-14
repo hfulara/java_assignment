@@ -6,6 +6,7 @@ import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -66,7 +67,7 @@ class WarehouseRepositoryTest {
         Warehouse warehouse = new Warehouse("MWH-XXX", "ZWOLLE-001", 100, 50);
         warehouse.id = 999L;
 
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(NotFoundException.class,
                 () -> repository.update(warehouse));
     }
 
