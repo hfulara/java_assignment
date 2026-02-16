@@ -1,7 +1,7 @@
 package com.fulfilment.application.monolith.fulfilment.adapters.database.restapi;
 
 import com.fulfilment.application.monolith.fulfilment.adapters.restapi.FulfilmentResourceImpl;
-import com.fulfilment.application.monolith.fulfilment.domain.modals.FulfilmentRequest;
+import com.fulfilment.application.monolith.fulfilment.domain.models.FulfilmentRequest;
 import com.fulfilment.application.monolith.fulfilment.domain.usecases.AssignFulfilmentUseCase;
 import com.fulfilment.application.monolith.fulfilment.domain.usecases.commands.AssignFulfilmentCommand;
 import jakarta.ws.rs.WebApplicationException;

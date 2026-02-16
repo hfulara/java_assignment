@@ -1,4 +1,4 @@
-package com.fulfilment.application.monolith.fulfilment.domain.modals;
+package com.fulfilment.application.monolith.fulfilment.domain.models;
 
 public class FulfilmentRequest {
     public Long storeId;

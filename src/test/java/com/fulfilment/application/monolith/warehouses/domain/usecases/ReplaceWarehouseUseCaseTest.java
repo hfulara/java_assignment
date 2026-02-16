@@ -16,7 +16,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-@QuarkusTest
 class ReplaceWarehouseUseCaseTest {
 
     @Mock

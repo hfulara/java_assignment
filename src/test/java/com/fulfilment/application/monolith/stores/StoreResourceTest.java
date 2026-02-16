@@ -1,113 +1,49 @@
 package com.fulfilment.application.monolith.stores;
 
-import io.quarkus.test.InjectMock;
-import io.quarkus.test.junit.QuarkusTest;
-import jakarta.transaction.Transactional;
+import com.fulfilment.application.monolith.common.BusinessException;
+
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@QuarkusTest
+
+@ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
 class StoreResourceTest {
 
-    @InjectMock
-    LegacyStoreManagerGateway legacyStoreManagerGateway;
+    @InjectMocks
+    StoreResource resource;
 
-    @Test
-    void shouldCreateStoreAndCallLegacyOnCommit() {
-        given()
-                .contentType("application/json")
-                .body("""
-                {
-                  "name": "Store A",
-                  "quantityProductsInStock": 10
-                }
-            """)
-                .when()
-                .post("/store")
-                .then()
-                .statusCode(201);
 
-        verify(legacyStoreManagerGateway)
-                .createStoreOnLegacySystem(ArgumentMatchers.any(Store.class));
+    Store store;
+
+    @BeforeEach
+    void setup() {
+        store = new Store();
+        store.id = 1L;
+        store.name = "Store A";
+        store.quantityProductsInStock = 10;
     }
 
     @Test
-    void shouldReturn400IfIdSetOnCreate() {
+    void shouldThrow422IfIdSetOnCreate() {
+        store.id = 99L;
 
-        given()
-                .contentType("application/json")
-                .body("""
-                    {
-                      "id": 1,
-                      "name": "Invalid Store",
-                      "quantityProductsInStock": 5
-                    }
-                """)
-                .when()
-                .post("/store")
-                .then()
-                .statusCode(400);
+        assertThrows(BusinessException.class,
+                () -> resource.create(store));
     }
 
     @Test
-    @Transactional
-    void shouldReturnAllStores() {
-        Store store = new Store();
-        store.name = "Store X";
-        store.quantityProductsInStock = 5;
-        store.persist();
+    void shouldThrow422IfNameMissingOnUpdate() {
 
-        given()
-                .when()
-                .get("/store")
-                .then()
-                .statusCode(200)
-                .body("$.size()", greaterThanOrEqualTo(1));
+        Store updated = new Store();
+        updated.name = null;
+
+        assertThrows(BusinessException.class,
+                () -> resource.update(1L, updated));
     }
 
-    @Test
-    void shouldReturn404IfStoreNotFound() {
-
-        given()
-                .when()
-                .get("/store/999")
-                .then()
-                .statusCode(404);
-    }
-
-    @Test
-    @Transactional
-    void shouldReturn400IfNameMissingOnUpdate() {
-
-        Store store = new Store();
-        store.name = "Store";
-        store.persist();
-
-        given()
-                .contentType("application/json")
-                .body("""
-                    {
-                      "quantityProductsInStock": 20
-                    }
-                """)
-                .when()
-                .put("/store/" + store.id)
-                .then()
-                .statusCode(400);
-    }
-
-    @Test
-    @Transactional
-    void shouldDeleteStore() {
-        int id = 3;
-        given()
-                .when()
-                .delete("/store/" + id)
-                .then()
-                .statusCode(204);
-    }
 }

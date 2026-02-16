@@ -12,8 +12,6 @@ public class Warehouse {
   public LocalDateTime createdAt;
   public LocalDateTime archivedAt;
 
-  public Warehouse() {}
-
   public Warehouse(String businessUnitCode,
                    String location,
                    int capacity,
@@ -26,12 +24,4 @@ public class Warehouse {
     this.stock = stock;
 
   }
-
-  public void archive() {
-    if (this.archivedAt != null) {
-      throw new IllegalStateException("Warehouse already archived");
-    }
-    this.archivedAt = LocalDateTime.now();
-  }
-
 }

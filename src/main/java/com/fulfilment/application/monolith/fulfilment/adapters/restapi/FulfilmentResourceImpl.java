@@ -1,7 +1,6 @@
 package com.fulfilment.application.monolith.fulfilment.adapters.restapi;
 
-import com.fulfilment.application.monolith.fulfilment.domain.modals.FulfilmentRequest;
-import com.fulfilment.application.monolith.fulfilment.domain.ports.FulfilmentStore;
+import com.fulfilment.application.monolith.fulfilment.domain.models.FulfilmentRequest;
 import com.fulfilment.application.monolith.fulfilment.domain.usecases.AssignFulfilmentUseCase;
 import com.fulfilment.application.monolith.fulfilment.domain.usecases.commands.AssignFulfilmentCommand;
 import jakarta.enterprise.context.RequestScoped;
@@ -36,9 +35,5 @@ public class FulfilmentResourceImpl {
         } catch (IllegalArgumentException e) {
             throw new WebApplicationException(e.getMessage(), 400);
         }
-    }
-    @GET
-    public void getAll() {
-
     }
 }

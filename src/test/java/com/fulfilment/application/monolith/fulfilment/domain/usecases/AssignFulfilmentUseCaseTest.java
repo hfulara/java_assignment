@@ -11,7 +11,6 @@ import org.mockito.Mockito;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@QuarkusTest
 class AssignFulfilmentUseCaseTest {
 
     private FulfilmentStore fulfilmentStore;
@@ -64,10 +63,10 @@ class AssignFulfilmentUseCaseTest {
     void shouldThrowWhenMoreThanThreeWarehousesPerStore() {
 
         when(fulfilmentStore.countWarehousesByStoreAndProduct(1L, 1L))
-                .thenReturn(1); // valid
+                .thenReturn(1);
 
         when(fulfilmentStore.countWarehousesByStore(1L))
-                .thenReturn(3); // violation
+                .thenReturn(3);
 
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,

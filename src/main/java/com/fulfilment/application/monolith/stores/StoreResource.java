@@ -23,6 +23,8 @@ import org.jboss.logging.Logger;
 @Consumes("application/json")
 public class StoreResource {
 
+  @Inject StoreRepository repository;
+
   @Inject TransactionSynchronizationRegistry txRegistry;
 
   @Inject LegacyStoreManagerGateway legacyStoreManagerGateway;
@@ -107,7 +109,7 @@ public class StoreResource {
       throw new BusinessException("Store Name was not set on request.");
     }
 
-    Store entity = Store.findById(id);
+    Store entity = repository.findById(id);
 
     if (entity == null) {
       throw new NotFoundException("Store with id of " + id + " does not exist.");

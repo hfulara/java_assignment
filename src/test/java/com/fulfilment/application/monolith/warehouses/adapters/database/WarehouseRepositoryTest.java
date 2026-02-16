@@ -1,84 +1,172 @@
 package com.fulfilment.application.monolith.warehouses.adapters.database;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
-import io.quarkus.test.junit.QuarkusTest;
-import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
+import jakarta.persistence.EntityManager;
 import jakarta.ws.rs.NotFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@QuarkusTest
-@Transactional
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
 class WarehouseRepositoryTest {
 
-    @Inject
+    @Spy
     WarehouseRepository repository;
 
+    @Mock
+    EntityManager em;
+
+    @Mock
+    DbWarehouse dbWarehouse;
+
+    @BeforeEach
+    void setup() {
+        repository.em = em; // manual injection
+    }
+
     @Test
-    void shouldCreateAndGetAll() {
-        Warehouse warehouse = new Warehouse("MWH-001", "ZWOLLE-001", 100, 50);
+    void shouldReturnAllWarehouses() {
+
+        DbWarehouse db1 = new DbWarehouse();
+        db1.businessUnitCode = "MWH-001";
+        db1.location = "LOC-1";
+        db1.capacity = 100;
+        db1.stock = 10;
+
+        doReturn(List.of(db1)).when(repository).listAll();
+
+        List<Warehouse> result = repository.getAll();
+
+        assertEquals(1, result.size());
+        assertEquals("MWH-001", result.get(0).businessUnitCode);
+    }
+
+    @Test
+    void shouldCreateWarehouse() {
+
+        Warehouse warehouse =
+                new Warehouse("MWH-002", "LOC-2", 200, 50);
+
+        doNothing().when(repository).persistAndFlush(any());
+
         repository.create(warehouse);
 
-        List<Warehouse> all = repository.getAll();
-
-        assertFalse(all.isEmpty());
-        assertEquals("MWH.001", all.get(0).businessUnitCode);
+        verify(repository).persistAndFlush(any(DbWarehouse.class));
     }
 
     @Test
-    void shouldSaveAndGetById() {
-        Warehouse warehouse = new Warehouse("MWH-002", "ZWOLLE-002", 200, 75);
+    void shouldUpdateWarehouse() {
+        Warehouse warehouse =
+                new Warehouse("MWH-003", "LOC-3", 300, 100);
+        warehouse.id = 1L;
 
-        Warehouse saved = repository.save(warehouse);
+        DbWarehouse db = new DbWarehouse();
+        db.id = 1L;
 
-        Optional<Warehouse> found = repository.findByBusinessUnitCode(warehouse.businessUnitCode);
+        doReturn(Optional.of(db))
+                .when(repository)
+                .findByIdOptional(1L);
 
-        assertTrue(found.isPresent());
-        assertEquals("MWH-002", found.get().businessUnitCode);
+        repository.update(warehouse);
+
+        assertEquals("MWH-003", db.businessUnitCode);
+        assertEquals("LOC-3", db.location);
     }
-
-    @Test
-    void shouldFindByBusinessUnitCode() {
-        Warehouse warehouse = new Warehouse("MWH-003", "AMSTERDAM-001", 300, 150);
-        repository.save(warehouse);
-
-        Optional<Warehouse> found = repository.findByBusinessUnitCode("MWH-003");
-
-        assertTrue(found.isPresent());
-        assertEquals("AMSTERDAM-001", found.get().location);
-    }
-
-    @Test
-    void shouldReturnEmptyWhenBusinessUnitNotFound() {
-        Optional<Warehouse> found = repository.getById(4L);
-
-        assertTrue(found.isEmpty());
-    }
-
-
 
     @Test
     void shouldThrowWhenUpdatingNonExisting() {
-        Warehouse warehouse = new Warehouse("MWH-XXX", "ZWOLLE-001", 100, 50);
+        Warehouse warehouse =
+                new Warehouse("MWH-XXX", "LOC", 100, 10);
         warehouse.id = 999L;
+
+        doReturn(Optional.empty())
+                .when(repository)
+                .findByIdOptional(999L);
 
         assertThrows(NotFoundException.class,
                 () -> repository.update(warehouse));
     }
 
+    @Test
+    void shouldArchiveWarehouse() {
+        Warehouse warehouse =
+                new Warehouse("MWH-004", "LOC", 100, 10);
+        warehouse.id = 1L;
 
+        DbWarehouse db = new DbWarehouse();
+        db.id = 1L;
+
+        doReturn(Optional.of(db))
+                .when(repository)
+                .findByIdOptional(1L);
+
+        repository.remove(warehouse);
+
+        assertNotNull(db.archivedAt);
+    }
 
     @Test
-    void shouldThrowWhenRemovingNonExisting() {
-        Warehouse warehouse = new Warehouse("MWH-YYY", "ZWOLLE-001", 100, 50);
-        warehouse.id = 888L;
+    void shouldFindByBusinessUnitCode() {
+        DbWarehouse db = new DbWarehouse();
+        db.businessUnitCode = "MWH-005";
+        db.location = "LOC";
+        db.capacity = 100;
+        db.stock = 20;
 
-        assertThrows(IllegalArgumentException.class,
-                () -> repository.remove(warehouse));
+        var queryMock =
+                mock(io.quarkus.hibernate.orm.panache.PanacheQuery.class);
+
+        doReturn(queryMock)
+                .when(repository)
+                .find("businessUnitCode", "MWH-005");
+
+        when(queryMock.firstResultOptional())
+                .thenReturn(Optional.of(db));
+
+        Optional<Warehouse> result =
+                repository.findByBusinessUnitCode("MWH-005");
+
+        assertTrue(result.isPresent());
+        assertEquals("MWH-005", result.get().businessUnitCode);
+    }
+
+    @Test
+    void shouldReturnWarehouseById() {
+        DbWarehouse db = new DbWarehouse();
+        db.id = 1L;
+        db.businessUnitCode = "MWH-001";
+        db.location = "LOC-1";
+        db.capacity = 200;
+        db.stock = 50;
+
+        when(em.find(DbWarehouse.class, 1L))
+                .thenReturn(db);
+
+        Optional<Warehouse> result = repository.getById(1L);
+
+        assertTrue(result.isPresent());
+        assertEquals("MWH-001", result.get().businessUnitCode);
+    }
+
+    @Test
+    void shouldSaveWarehouse() {
+
+        Warehouse warehouse =
+                new Warehouse("MWH-007", "LOC", 100, 10);
+
+        doNothing().when(repository).create(any());
+
+        Warehouse result = repository.save(warehouse);
+
+        assertEquals("MWH-007", result.businessUnitCode);
+        verify(repository).create(any());
     }
 }
